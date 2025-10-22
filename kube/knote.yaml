@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: knote
+spec:
+  replicas: 1 # numero de pods de despliegue
+  selector:
+    matchLabels: # las etiqueta sirven para identificar pods
+      app: knote #etiqueta del pod para consultar
+  template:
+    metadata:
+      labels:
+        app: knote
+    spec:
+      containers:
+        - name: knote
+          image: nattvr/knote:2.0.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: MONGO_URL
+              value: mongodb://mongo:27017/dev
+            - name: MINIO_ACCESS_KEY
+              value: mykey
+            - name: MINIO_SECRET_KEY
+              value: mysecret
+            - name: MINIO_HOST
+              value: minio
+          imagePullPolicy: Always # Que simepre vaya a dockerhub y no vaya a local para leventar el pod
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: knote # nombre servicio
+spec:
+  selector:
+    app: knote # labels alineados con este nombre del pod
+  ports:
+    - port: 80 # puerto que expone
+      targetPort: 8080 # redirecciona los pods a este puerto
+  type: LoadBalancer
